@@ -60,15 +60,15 @@ Plot1
 
 
 # Testing for difference in mean number of eggs between treatments
-Data.aov <- anova(lm(Mean_eggs ~ Treatment, data = New_data))
+Data.aov <- aov(Mean_eggs ~ Treatment, data = New_data)
 Data.aov
 
 # Testing for difference in mean number of offspring between treatments
-Data1.aov <- anova(lm(Mean_offspring ~ Treatment, data = New_data))
+Data1.aov <- aov(Mean_offspring ~ Treatment, data = New_data)
 Data1.aov
 
 # Testing for difference in mean egg to offspring ratio between treatments
-Data2.aov <- anova(lm(Egg_to_offspring ~ Treatment, data = New_data))
+Data2.aov <- aov(Egg_to_offspring ~ Treatment, data = New_data)
 Data2.aov
 
 
