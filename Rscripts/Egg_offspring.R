@@ -8,6 +8,7 @@ library(rstatix)
 
 setwd()
 Data<- read.csv("Egg_to_offspring_data.csv", header = T)
+New_data<- Data %>% group_by(Treatment, Batch, Tube) %>% summarise_at (.vars=c("Egg_to_offspring_ratio"), .funs =mean)
 New_data<- Data %>% group_by(Treatment, Batch) %>% summarise_at (.vars=c("Eggs", "Offspring"), .funs =sum)
 New_data$Females<- c(25, 20, 20, 24, 18, 14, 25, 25, 25, 23, 25, 28, 25, 25, 24, 25, 20, 20, 15, 15, 20, 25, 25, 25) #Numbers represent total females that were used for those treatment in each block
 New_data$Mean_eggs <- New_data$Eggs/ New_data$Females
@@ -30,23 +31,39 @@ Plot<- ggplot(New_data2, aes(x= Treatment, y = Mean, fill = variables))+
 
 Plot
 
-#Pairwise comparison for mean number of eggs between treatments
-New_data<- ungroup(New_data)
-pair <- New_data %>%
-  pairwise_t_test(Mean_eggs ~ Treatment, p.adjust.method = "bonferroni")
-pair
 
 
-#Pairwise comparison for mean number of offspring between treatments
-pair1 <- New_data %>%
-  pairwise_t_test(Mean_offspring ~ Treatment, p.adjust.method = "bonferroni")
-pair1
+
+#Mixed effect models to test the effect of block
+Comparison<- Data %>% group_by(Treatment, Batch, Tube) %>% summarise_at (.vars=c("Egg_to_offspring_ratio"), .funs =mean)
+Model1<-lmer(Egg_to_offspring_ratio~ (1|Batch)+ Treatment, Comparison)
+Model2<-lm(Egg_to_offspring_ratio~  Treatment, Comparison)
+
+anova(Model1,Model2)
 
 
 #Pairwise comparison for egg to offspring ratio between treatments
+Comparison$Treatment<- as.factor(Comparison$Treatment)
+Updated_data<- ungroup(Comparison)
+pair <- Updated_data %>%
+  pairwise_t_test(Egg_to_offspring_ratio ~ Treatment, p.adjust.method = "bonferroni")
+pair
+
+
+
+
+#Pairwise comparison for mean number of eggs between treatments
+
+pair1 <- New_data %>%
+  pairwise_t_test(Mean_eggs ~ Treatment, p.adjust.method = "bonferroni")
+pair1
+
+
+#Pairwise comparison for mean number of offspring between treatments
 pair2 <- New_data %>%
-  pairwise_t_test(Egg_to_offspring ~ Treatment, p.adjust.method = "bonferroni")
+  pairwise_t_test(Mean_offspring ~ Treatment, p.adjust.method = "bonferroni")
 pair2
+
 
 
 #Plot egg to offspring data
@@ -58,17 +75,5 @@ Plot1<- ggplot(Ratio, aes(x= Treatment, y = mean))+
 
 Plot1
 
-
-# Testing for difference in mean number of eggs between treatments
-Data.aov <- aov(Mean_eggs ~ Treatment, data = New_data)
-Data.aov
-
-# Testing for difference in mean number of offspring between treatments
-Data1.aov <- aov(Mean_offspring ~ Treatment, data = New_data)
-Data1.aov
-
-# Testing for difference in mean egg to offspring ratio between treatments
-Data2.aov <- aov(Egg_to_offspring ~ Treatment, data = New_data)
-Data2.aov
 
 

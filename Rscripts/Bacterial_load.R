@@ -1,5 +1,9 @@
 library(ggplot2)
 library(tidyverse)
+library(lmerTest)
+library(lme4)
+library(car)
+
 
 setwd()
 Data<- read.csv("Bacterial_load.csv", header=T)
@@ -24,7 +28,7 @@ Updated_data$ln_count<- as.numeric(Updated_data$ln_count)
 
 
 #Plotting the data
-Updated_data$Treatment<- factor(Updated_data$Treatment, levels=c("I120M", "Unmated","Mated"))
+Updated_data$Treatment<- factor(Updated_data$Treatment, levels=c("Control", "Unmated","Mated"))
 Updated_data$Time<- as.factor(Updated_data$Time)
 
 ggplot(Updated_data, aes(Time, ln_count, color=Treatment)) + geom_boxplot(width=0.5, position=position_dodge(0.8))+ geom_point(size=1, position = position_jitterdodge())+
@@ -34,12 +38,23 @@ ggplot(Updated_data, aes(Time, ln_count, color=Treatment)) + geom_boxplot(width=
                                                                           show.legend = FALSE)
 
 
+#Mixed effect models to compare effect of experimental block
+New_data<- Updated_data[!Updated_data$Treatment=="Control",]
+New_data$Block<- as.factor(New_data$Block)
+
+Model1<-lmer(ln_count~(1|Block) + Treatment, New_data)
+Model2<-lm(ln_count~  Treatment, New_data)
+anova(Model1, Model2)
+summary(Model1)
+
+
+#Levene's test to compare if the variances are significantly different from each other or not
+leveneTest(ln_count ~ Treatment, New_data)
+
 #Comparing variance between mated and unmated treatments
-New_data<- Updated_data[!Updated_data$Treatment=="I120M",]
 New_data %>% group_by(Treatment) %>% summarise(var=var(ln_count))
 
-#F-test to compare if the variances are significantly different from each other or not
-var.test(ln_count ~ Treatment, New_data)
+
 
 #Welch's t-est the difference in mean between two treatment groups as they have signifincant difference in their variance
 t.test(ln_count~Treatment, New_data)
