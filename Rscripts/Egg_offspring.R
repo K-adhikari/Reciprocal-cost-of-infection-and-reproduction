@@ -6,6 +6,7 @@ library(reshape2)
 library(rstatix)
 
 
+
 setwd()
 Data<- read.csv("Egg_to_offspring_data.csv", header = T)
 New_data<- Data %>% group_by(Treatment, Batch, Tube) %>% summarise_at (.vars=c("Egg_to_offspring_ratio"), .funs =mean)
@@ -16,7 +17,10 @@ New_data$Mean_offspring <- New_data$Offspring/ New_data$Females
 New_data$Egg_to_offspring <- New_data$Mean_offspring/New_data$Mean_eggs
 
 
-#Plot mean egg and offspring numbers across three experimental blocks
+
+
+# Plot mean egg and offspring numbers across three experimental blocks
+
 New_data1<- New_data %>% select(Treatment, Mean_eggs, Mean_offspring) %>% group_by(Treatment) %>% summarise_each(funs(mean, sd, std.error))
 
 New_data2<- data.frame(Treatment= c(rep(New_data1$Treatment,2)), variables = c(rep('Eggs', 8), rep('Offspring', 8)),
@@ -33,8 +37,8 @@ Plot
 
 
 
+# Mixed effect models to test the effect of block
 
-#Mixed effect models to test the effect of block
 Comparison<- Data %>% group_by(Treatment, Batch, Tube) %>% summarise_at (.vars=c("Egg_to_offspring_ratio"), .funs =mean)
 Model1<-lmer(Egg_to_offspring_ratio~ (1|Batch)+ Treatment, Comparison)
 Model2<-lm(Egg_to_offspring_ratio~  Treatment, Comparison)
@@ -42,7 +46,9 @@ Model2<-lm(Egg_to_offspring_ratio~  Treatment, Comparison)
 anova(Model1,Model2)
 
 
-#Pairwise comparison for egg to offspring ratio between treatments
+
+# Pairwise comparison for egg to offspring ratio between treatments
+
 Comparison$Treatment<- as.factor(Comparison$Treatment)
 Updated_data<- ungroup(Comparison)
 pair <- Updated_data %>%
@@ -51,15 +57,16 @@ pair
 
 
 
-
-#Pairwise comparison for mean number of eggs between treatments
+# Pairwise comparison for mean number of eggs between treatments
 
 pair1 <- New_data %>%
   pairwise_t_test(Mean_eggs ~ Treatment, p.adjust.method = "bonferroni")
 pair1
 
 
+
 #Pairwise comparison for mean number of offspring between treatments
+
 pair2 <- New_data %>%
   pairwise_t_test(Mean_offspring ~ Treatment, p.adjust.method = "bonferroni")
 pair2
@@ -67,6 +74,7 @@ pair2
 
 
 #Plot egg to offspring data
+
 Ratio<- New_data %>% select(Treatment, Egg_to_offspring) %>% group_by(Treatment) %>% summarise_each(funs(mean, sd, std.error))
 Plot1<- ggplot(Ratio, aes(x= Treatment, y = mean))+
   geom_bar(stat="identity", fill="white", colour = "black") +
