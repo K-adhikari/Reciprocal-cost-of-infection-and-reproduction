@@ -10,6 +10,7 @@ Plot1<- ggscatter(Data, x = "Egg", y = "ln",
 Plot1
 
 
+
 #Correlation between egg to offspring ratio and bacterial load
 
 Plot2<- ggscatter(Data, x = "Egg_offspring.ratio", y = "ln", 
